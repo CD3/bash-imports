@@ -1,0 +1,139 @@
+#! /bin/bash
+
+
+function _is_tarfile {
+  # return true (0) if argument is a tarball filename
+  # return false (1) if not
+  file=$1
+  shift
+
+  [[ $file == *.tar.* ]] && return 0
+  [[ $file == *.tar ]] && return 0
+
+  return 1
+}
+
+function _untar {
+  # Untars a tarball into a destination directory
+  tarfile=$1
+  shift
+  dest=$1
+  shift
+
+  [[ -z $dest ]] && echo "untar requires two arguments: untar tarfile dest" && exit 1
+
+  cmd="mkdir -p ${dest}; tar -x -C ${dest}"
+
+  [[ $tarfile == *.bz2 ]] && cmd="${cmd} -j"
+  [[ $tarfile == *.gz ]] && cmd="${cmd} -z"
+
+  cmd="${cmd} -f ${tarfile}"
+
+  eval "${cmd}"
+}
+
+function _unpack_module_file {
+  # Unpackage a module file into a destination directory
+  # If the module file is a tarball, it will be untarred
+  # if the module file is a directory, it will be copied.
+  # basically, it just tries to do the right thing
+  name=$1
+  shift
+  file=$1
+  shift
+  dest=$1
+  shift
+
+  [[ -z $dest ]] && echo "_unpack_module_file requires three arguments: _unpack_module_file name file dest" && exit 1
+
+
+  if _is_tarfile $file
+  then
+    _untar $file $dest
+    cd $dest
+    # if the tarfile untars into a single directory with
+    # the package name, then we need to move its contents into
+    # the top level directory
+    if [[ $(ls) ==  $name && -d $name ]]
+    then
+      mv $name $name.deleteme
+      mv $name.deleteme/* ./
+      rm -r $name.deleteme
+    fi
+    cd ..
+  fi
+
+  if [[ -d $file ]]
+  then
+    cp -r $file $dest
+  fi
+
+  if [[ ! -d $dest ]]
+  then
+    echo "ERROR: could not create temporary directory $dest for $name"
+    exit 2
+  fi
+
+
+}
+
+function _find_module {
+  # Given a module name, tries to find a file containing the module.
+  # This is done soley based on filenames.
+  name=$1
+  [[ -z $name ]] && exit 1
+
+  candidates="${name} ${name}.tar.bz2 ${name}.tar.gz"
+  SHELL_PATH=".:$SHELL_PATH"
+  module_file=""
+  for candidate in ${candidates}
+  do
+      for path in ${SHELL_PATH//:/ } # WARNING: does not allow for directories with spaces in their names.
+      do
+        module_file=$(find $path -name $candidate)
+        [[ -n $module_file ]] && break
+      done
+      [[ -n $module_file ]] && break
+  done
+  [[ -n $module_file ]] && readlink -f ${module_file}
+
+}
+
+function _cleanup_imports {
+  rm -r *.import.d
+}
+trap _cleanup_imports EXIT
+
+
+
+function import {
+  # imports one or more modules.
+  # This involvies finding the files containing the module
+  # and then sourcing the scripts contained in the module.
+  packages=$(echo "${*}" | sed "s/,/ /g")
+
+  for package in ${packages}
+  do
+    package_dir=$package.import.d
+    [[ -d $package_dir ]] && rm -r $package_dir
+
+
+    package_file=$(_find_module ${package})
+    [[ -z $package_file ]] && echo "No such module found: $package" && exit 1
+
+    _unpack_module_file "$package" "$package_file" "$package_dir"
+
+    # all .sh files in the top directory of the package should be sourced
+    # all files in the lib/ directory of the package should be sourced
+    # the bin/ directory of the pakage should be addeed to PATH
+    files_to_source=""
+    files_to_source="$files_to_source $(find $package_dir -maxdepth 1 -type f -name '*.sh' )"
+    [[ -d "$package_dir/lib" ]] && files_to_source="$files_to_source $(find $package_dir/lib -maxdepth 2 -type f -name '*.sh' )"
+    bin_dir="${package_dir}/bin"
+    for file in $files_to_source
+    do
+      source "$file"
+    done
+  done
+}
+
