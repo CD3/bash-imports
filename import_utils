@@ -129,11 +129,12 @@ function import {
     files_to_source=""
     files_to_source="$files_to_source $(find $package_dir -maxdepth 1 -type f -name '*.sh' )"
     [[ -d "$package_dir/lib" ]] && files_to_source="$files_to_source $(find $package_dir/lib -maxdepth 2 -type f -name '*.sh' )"
-    bin_dir="${package_dir}/bin"
+    bin_dir=$(readlink -f "${package_dir}/bin")
     for file in $files_to_source
     do
       source "$file"
     done
+    [[ -d ${bin_dir} ]] && export PATH="${bin_dir}:${PATH}"
   done
 }
 
