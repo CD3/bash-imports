@@ -20,7 +20,7 @@ function _untar {
   dest=$1
   shift
 
-  [[ -z $dest ]] && echo "untar requires two arguments: untar tarfile dest" && exit 1
+  [[ -z $dest ]] && echo "ERROR: _untar requires two arguments: untar tarfile dest" && exit 1
 
   cmd="mkdir -p ${dest}; tar -x -C ${dest}"
 
@@ -44,7 +44,7 @@ function _unpack_module_file {
   dest=$1
   shift
 
-  [[ -z $dest ]] && echo "_unpack_module_file requires three arguments: _unpack_module_file name file dest" && exit 1
+  [[ -z $dest ]] && echo "ERROR: _unpack_module_file requires three arguments: _unpack_module_file name file dest" && exit 1
 
 
   if _is_tarfile $file
