@@ -1,6 +1,10 @@
 #! /bin/bash
 
-install_dir="${HOME}/.bash/"
+source import_utils
+set -e
+
+mkdir -p ${IMPORT_MODULE_PATH}
+install_dir=$(basename ${IMPORT_MODULE_PATH})
 mkdir -p ${install_dir}
 cp import_utils ${install_dir}
 
@@ -13,7 +17,7 @@ then
   edit_bashrc=1
 fi
 
-if grep "import_utils" $bashrc
+if grep "import_utils" $bashrc > /dev/null
 then
   echo "import_utils found in $bashrc. will not edit."
 else
