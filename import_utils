@@ -88,7 +88,7 @@ function _find_module {
   name=$1
   [[ -z $name ]] && exit 1
 
-  patterns="${name}.sh ${name} ${name}.tar.bz2 ${name}.tar.gz"
+  patterns="${name}.sh ${name} ${name}.tar ${name}.tar.bz2 ${name}.tar.gz"
   SHELLPATH=".:$SHELLPATH"
   module_file=""
   for path in ${SHELLPATH//:/ } # WARNING: does not allow for directories with spaces in their names.
