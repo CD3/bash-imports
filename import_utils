@@ -167,7 +167,7 @@ function import {
 }
 
 function install_module {
-  package_file=$1
+  package_file=$(echo $1 | sed "/\/\+$//")
   shift
 
   [[ ! -n $package_file ]] && _log 5 "install_module requires one argument: install_module <module_file>" && exit 1
