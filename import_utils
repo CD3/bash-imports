@@ -1,5 +1,20 @@
 #! /bin/bash
 
+IMPORT_LOGGING_LEVEL=${IMPORT_LOGGING_LEVEL:-5}
+exec 3>&1
+function _log {
+  if [[ $1 -ge $IMPORT_LOGGING_LEVEL ]]
+  then
+    prefix=""
+    [[ $1 -eq 5 ]] && prefix="CRITICAL: "
+    [[ $1 -eq 4 ]] && prefix="ERROR: "
+    [[ $1 -eq 3 ]] && prefix="WARNING: "
+    [[ $1 -eq 2 ]] && prefix="INFO: "
+    [[ $1 -eq 1 ]] && prefix="DEBUG: "
+
+    echo -e "$prefix$2" >&3
+  fi
+}
 
 function _is_tarfile {
   # return true (0) if argument is a tarball filename
@@ -20,7 +35,7 @@ function _untar {
   dest=$1
   shift
 
-  [[ -z $dest ]] && echo "ERROR: _untar requires two arguments: untar tarfile dest" && exit 1
+  [[ -z $dest ]] && _log 5 "_untar requires two arguments: untar tarfile dest" && exit 1
 
   cmd="mkdir -p ${dest}; tar -x -C ${dest}"
 
@@ -44,7 +59,7 @@ function _unpack_module_file {
   dest=$1
   shift
 
-  [[ -z $dest ]] && echo "ERROR: _unpack_module_file requires three arguments: _unpack_module_file name file dest" && exit 1
+  [[ -z $dest ]] && _log 5 "_unpack_module_file requires three arguments: _unpack_module_file name file dest" && exit 1
 
 
   if _is_tarfile $file
@@ -75,7 +90,7 @@ function _unpack_module_file {
 
   if [[ ! -d $dest ]]
   then
-    echo "ERROR: could not create temporary directory $dest for $name"
+    _log 5 "could not create temporary directory $dest for $name"
     exit 2
   fi
 
@@ -124,7 +139,8 @@ function import {
 
 
     package_file=$(_find_module ${package})
-    [[ -z $package_file ]] && echo "No such module found: $package" && exit 1
+    [[ -z $package_file ]] && _log 5 "No such module found: $package" && exit 1
+    _log 2 "Found ${package_file} to import ${package}"
 
     _unpack_module_file "$package" "$package_file" "$package_dir"
 
