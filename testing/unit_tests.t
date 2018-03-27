@@ -4,15 +4,8 @@
   mod2-init.sh
   mod2-lib.sh
   mod3.sh
-  mod4-init.sh
-  mod4-lib.sh
-  mod5-init.sh
-  mod5-lib.sh
-  mod6.sh
-  mod1-exec
-  mod2-exec
-  mod4-exec
-  mod5-exec
+  CRITICAL: No such module found: mod4
+  [1]
   $ cd $TESTDIR; ./test_missing-imports.sh
   CRITICAL: No such module found: mod
   [1]
@@ -23,12 +16,12 @@
   mod2-init.sh
   mod2-lib.sh
   mod3.sh
-  mod4-init.sh
-  mod4-lib.sh
-  mod5-init.sh
-  mod5-lib.sh
-  mod6.sh
-  mod1-exec
-  mod2-exec
-  mod4-exec
-  mod5-exec
+  CRITICAL: No such module found: mod4
+  [1]
+  $ cd $TESTDIR; ./test_install-module.sh
+  INFO: packaging mod1 into a tarball.
+  INFO: moving mod1 tarball to module path *. (glob)
+  */mod1.tar.bz2 (glob)
+  INFO: Found */mod1 to import mod1 (glob)
+  mod1-init.sh
+  mod1-lib.sh

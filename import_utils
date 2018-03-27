@@ -40,7 +40,7 @@ function _untar {
   dest=$1
   shift
 
-  [[ -z $dest ]] && _log 5 "_untar requires two arguments: untar tarfile dest" && exit 1
+  [[ -z $dest ]] && _log 5 "_untar requires two arguments: untar <tarfile> <dest>" && exit 1
 
   cmd="mkdir -p ${dest}; tar -x -C ${dest}"
 
@@ -64,7 +64,7 @@ function _unpack_module_file {
   dest=$1
   shift
 
-  [[ -z $dest ]] && _log 5 "_unpack_module_file requires three arguments: _unpack_module_file name file dest" && exit 1
+  [[ -z $dest ]] && _log 5 "_unpack_module_file requires three arguments: _unpack_module_file <name> <file> <dest>" && exit 1
 
 
   if _is_tarfile $file
@@ -166,3 +166,24 @@ function import {
 
 }
 
+function install_module {
+  package_file=$1
+  shift
+
+  [[ ! -n $package_file ]] && _log 5 "install_module requires one argument: install_module <module_file>" && exit 1
+  [[ ! -e $package_file ]] && _log 5 "install_module can't install module. file does not exists '${package_file}'." && exit 1
+
+  if [[ -d $package_file ]]
+  then
+    _log 2 "packaging $package_file into a tarball."
+    tar cjf $package_file.tar.bz2 $package_file
+    _log 2 "moving $package_file tarball to module path ${IMPORT_MODULE_PATH}."
+    mv $package_file.tar.bz2 ${IMPORT_MODULE_PATH}/
+  fi
+
+  if [[ -f $package_file ]]
+  then
+    _log 2 "copying $package_file to module path ${IMPORT_MODULE_PATH}."
+    cp $package_file ${IMPORT_MODULE_PATH}/
+  fi
+}
