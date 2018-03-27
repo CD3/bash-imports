@@ -5,7 +5,7 @@ your script depends on, similar to importing a module/package in Python. For exa
 
 ```bash
 #! /bin/bash
-
+source import_utils
 import functions
 
 ...
