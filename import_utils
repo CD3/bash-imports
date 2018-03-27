@@ -1,6 +1,11 @@
 #! /bin/bash
 
+IMPORT_MODULE_PATH=${IMPORT_MODULE_PATH:-${HOME}/.bash/modules}
 IMPORT_LOGGING_LEVEL=${IMPORT_LOGGING_LEVEL:-5}
+
+
+
+
 exec 3>&1
 function _log {
   if [[ $1 -ge $IMPORT_LOGGING_LEVEL ]]
@@ -104,16 +109,17 @@ function _find_module {
   [[ -z $name ]] && exit 1
 
   patterns="${name}.sh ${name} ${name}.tar ${name}.tar.bz2 ${name}.tar.gz"
-  SHELLPATH=".:$SHELLPATH"
+  search_paths=".:$IMPORT_MODULE_PATH"
   module_file=""
-  for path in ${SHELLPATH//:/ } # WARNING: does not allow for directories with spaces in their names.
+  for path in ${search_paths//:/ } # WARNING: does not allow for directories with spaces in their names.
   do
-      for pattern in ${patterns}
-      do
-        module_file=$(find $path -name $pattern | head -n 1)
-        [[ -n $module_file ]] && break
-      done
+    [[ -d ${path} ]] || continue
+    for pattern in ${patterns}
+    do
+      module_file=$(find $path -name $pattern | head -n 1)
       [[ -n $module_file ]] && break
+    done
+    [[ -n $module_file ]] && break
   done
   [[ -n $module_file ]] && readlink -f ${module_file}
 

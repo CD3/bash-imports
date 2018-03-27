@@ -17,7 +17,7 @@
   CRITICAL: No such module found: mod
   [1]
   $ cd $TESTDIR; ./test_logging-imports.sh
-  INFO: Found */mod1 to import mod1 glob
+  INFO: Found */mod1 to import mod1 (glob)
   mod1-init.sh
   mod1-lib.sh
   mod2-init.sh
