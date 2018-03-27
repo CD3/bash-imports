@@ -14,7 +14,7 @@ will look for a file named `functions.sh` in the current directory and source it
 
 Actually, the `import` function looks for several different files in several different locations to satisfy
 the request. First, the current directory is searched. If the module/package is not found, then `import` will
-look in the directories contained in the environment variable `SHELLPATH`, if any.
+look in the directories contained in the environment variable `IMPORT_MODULE_PATH`, if any.
 
 For each directory that is searched, the `import` function will look for a file or directory with the following
 names, in order:
