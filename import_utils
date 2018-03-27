@@ -91,9 +91,9 @@ function _find_module {
   patterns="${name}.sh ${name} ${name}.tar.bz2 ${name}.tar.gz"
   SHELLPATH=".:$SHELLPATH"
   module_file=""
-  for pattern in ${patterns}
+  for path in ${SHELLPATH//:/ } # WARNING: does not allow for directories with spaces in their names.
   do
-      for path in ${SHELLPATH//:/ } # WARNING: does not allow for directories with spaces in their names.
+      for pattern in ${patterns}
       do
         module_file=$(find $path -name $pattern | head -n 1)
         [[ -n $module_file ]] && break
