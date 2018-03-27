@@ -61,12 +61,17 @@ function _unpack_module_file {
       rm -r $name.deleteme
     fi
     cd ..
-  fi
 
-  if [[ -d $file ]]
+  elif [[ -d $file ]]
   then
     cp -r $file $dest
+
+  elif [[ -f $file ]]
+  then
+    mkdir -p $dest
+    cp $file $dest
   fi
+
 
   if [[ ! -d $dest ]]
   then
@@ -83,14 +88,14 @@ function _find_module {
   name=$1
   [[ -z $name ]] && exit 1
 
-  candidates="${name} ${name}.tar.bz2 ${name}.tar.gz"
-  SHELL_PATH=".:$SHELL_PATH"
+  patterns="${name} ${name}.tar.bz2 ${name}.tar.gz ${name}.sh"
+  SHELLPATH=".:$SHELLPATH"
   module_file=""
-  for candidate in ${candidates}
+  for pattern in ${patterns}
   do
-      for path in ${SHELL_PATH//:/ } # WARNING: does not allow for directories with spaces in their names.
+      for path in ${SHELLPATH//:/ } # WARNING: does not allow for directories with spaces in their names.
       do
-        module_file=$(find $path -name $candidate)
+        module_file=$(find $path -name $pattern | head -n 1)
         [[ -n $module_file ]] && break
       done
       [[ -n $module_file ]] && break
@@ -100,7 +105,7 @@ function _find_module {
 }
 
 function _cleanup_imports {
-  rm -r *.import.d
+  rm -rf *.import.d
 }
 trap _cleanup_imports EXIT
 
@@ -136,5 +141,6 @@ function import {
     done
     [[ -d ${bin_dir} ]] && export PATH="${bin_dir}:${PATH}"
   done
+
 }
 
