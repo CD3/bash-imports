@@ -29,9 +29,11 @@ If a file or directory is found, the `import` function will do the following:
 
 1. If a file is found, it is sourced.
 1. If a directory is found:
-    1. All `*.sh` files in the top-level of the directory are sourced.
-    1. All `*.sh` files in the `lib/` subdirectory, if it exists, are sourced.
+    1. Source all `*.sh` files in the top-level of the directory.
+    1. Source all `*.sh` files in the `lib/` subdirectory, if it exists.
+    1. Add the `bin/` subdirectory to `PATH`.
 1. If a tarball is found:
-    1. The tarball is unpacked into a directory.
-    1. All `*.sh` files in the top-level of the directory are sourced.
-    1. All `*.sh` files in the `lib/` subdirectory, if it exists, are sourced.
+    1. Unpacked the tarball into a directory.
+    1. Source all `*.sh` files in the top-level of the directory.
+    1. Source all `*.sh` files in the `lib/` subdirectory, if it exists.
+    1. Add the `bin/` subdirectory to `PATH`.
