@@ -1,7 +1,9 @@
 #! /bin/bash
 
-IMPORT_MODULE_PATH=${IMPORT_MODULE_PATH:-"${HOME}/.bash/modules"}
+IMPORT_MODULE_INSTALL_PATH=${IMPORT_MODULE_INSTALL_PATH:-"${HOME}/.bash/modules"}
+IMPORT_MODULE_PATH=${IMPORT_MODULE_PATH:-"${IMPORT_MODULE_INSTALL_PATH}"}
 IMPORT_LOGGING_LEVEL=${IMPORT_LOGGING_LEVEL:-5}
+IMPORT_IMPORTED_MODULES=${IMPORT_LOGGING_LEVEL:-""}
 
 
 
@@ -167,23 +169,25 @@ function import {
 }
 
 function install_module {
-  package_file=$(echo $1 | sed "/\/\+$//")
+  package_file=$(echo $1 | sed "s/\/\+$//")
   shift
 
   [[ ! -n $package_file ]] && _log 5 "install_module requires one argument: install_module <module_file>" && exit 1
   [[ ! -e $package_file ]] && _log 5 "install_module can't install module. file does not exists '${package_file}'." && exit 1
 
+  mkdir -p ${IMPORT_MODULE_INSTALL_PATH}
+
   if [[ -d $package_file ]]
   then
     _log 2 "packaging $package_file into a tarball."
     tar cjf $package_file.tar.bz2 $package_file
-    _log 2 "moving $package_file tarball to module path ${IMPORT_MODULE_PATH}."
-    mv $package_file.tar.bz2 ${IMPORT_MODULE_PATH}/
+    _log 2 "moving $package_file tarball to module path ${IMPORT_MODULE_INSTALL_PATH}."
+    mv $package_file.tar.bz2 ${IMPORT_MODULE_INSTALL_PATH}/
   fi
 
   if [[ -f $package_file ]]
   then
-    _log 2 "copying $package_file to module path ${IMPORT_MODULE_PATH}."
-    cp $package_file ${IMPORT_MODULE_PATH}/
+    _log 2 "copying $package_file to module path ${IMPORT_MODULE_INSTALL_PATH}."
+    cp $package_file ${IMPORT_MODULE_INSTALL_PATH}/
   fi
 }
