@@ -127,11 +127,45 @@ function _find_module {
 
 }
 
-function _cleanup_imports {
-  rm -rf *.import.d
-}
-trap _cleanup_imports EXIT
 
+function install_module {
+  package_file=$(echo $1 | sed "s/\/\+$//")
+  shift
+
+  [[ ! -n $package_file ]] && _log 5 "install_module requires one argument: install_module <module_file>" && exit 1
+  [[ ! -e $package_file ]] && _log 5 "install_module can't install module. file does not exists '${package_file}'." && exit 1
+
+  mkdir -p ${IMPORT_MODULE_INSTALL_PATH}
+
+  if [[ -d $package_file ]]
+  then
+    _log 2 "packaging $package_file into a tarball."
+    tar cjf $package_file.tar.bz2 $package_file
+    _log 2 "moving $package_file tarball to module path ${IMPORT_MODULE_INSTALL_PATH}."
+    mv $package_file.tar.bz2 ${IMPORT_MODULE_INSTALL_PATH}/
+  fi
+
+  if [[ -f $package_file ]]
+  then
+    _log 2 "copying $package_file to module path ${IMPORT_MODULE_INSTALL_PATH}."
+    cp $package_file ${IMPORT_MODULE_INSTALL_PATH}/
+  fi
+}
+
+function _has_been_imported
+{
+  package=${1}
+  shift
+  for imported_module in ${IMPORT_IMPORTED_MODULES//:/ } # WARNING: does not allow for directories with spaces in their names.
+  do
+    if [[ $package == ${imported_module} ]]
+    then
+      return 0
+    fi
+  done
+
+  return 1
+}
 
 
 function import {
@@ -164,30 +198,13 @@ function import {
       source "$file"
     done
     [[ -d ${bin_dir} ]] && export PATH="${bin_dir}:${PATH}"
+
+    IMPORT_IMPORTED_MODULES="${IMPORT_IMPORTED_MODULES}:${package}:${package_file}"
   done
 
 }
-
-function install_module {
-  package_file=$(echo $1 | sed "s/\/\+$//")
-  shift
-
-  [[ ! -n $package_file ]] && _log 5 "install_module requires one argument: install_module <module_file>" && exit 1
-  [[ ! -e $package_file ]] && _log 5 "install_module can't install module. file does not exists '${package_file}'." && exit 1
-
-  mkdir -p ${IMPORT_MODULE_INSTALL_PATH}
-
-  if [[ -d $package_file ]]
-  then
-    _log 2 "packaging $package_file into a tarball."
-    tar cjf $package_file.tar.bz2 $package_file
-    _log 2 "moving $package_file tarball to module path ${IMPORT_MODULE_INSTALL_PATH}."
-    mv $package_file.tar.bz2 ${IMPORT_MODULE_INSTALL_PATH}/
-  fi
-
-  if [[ -f $package_file ]]
-  then
-    _log 2 "copying $package_file to module path ${IMPORT_MODULE_INSTALL_PATH}."
-    cp $package_file ${IMPORT_MODULE_INSTALL_PATH}/
-  fi
+function _cleanup_imports {
+  rm -rf *.import.d
 }
+trap _cleanup_imports EXIT
+
