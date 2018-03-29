@@ -3,7 +3,7 @@
 IMPORT_MODULE_INSTALL_PATH=${IMPORT_MODULE_INSTALL_PATH:-"${HOME}/.bash/modules"}
 IMPORT_MODULE_PATH=${IMPORT_MODULE_PATH:-"${IMPORT_MODULE_INSTALL_PATH}"}
 IMPORT_LOGGING_LEVEL=${IMPORT_LOGGING_LEVEL:-5}
-IMPORT_IMPORTED_MODULES=${IMPORT_LOGGING_LEVEL:-""}
+IMPORT_IMPORTED_MODULES=${IMPORT_IMPORTED_MODULES:-""}
 
 
 
@@ -167,6 +167,13 @@ function _module_in_stack
   return 1
 }
 
+function reimport_modules {
+  for imported_module in ${IMPORT_IMPORTED_MODULES//:/ }
+  do
+    import ${imported_module}
+  done
+}
+
 
 function import {
   # imports one or more modules.
@@ -211,7 +218,7 @@ function import {
     [[ -d ${bin_dir} ]] && export PATH="${bin_dir}:${PATH}"
 
     # only add "top-level" imports to global import list
-    [[ ${_IMPORT_LEVEL} -eq 1 ]] && IMPORT_IMPORTED_MODULES="${IMPORT_IMPORTED_MODULES}:${package}:${package_file}"
+    IMPORT_IMPORTED_MODULES="${IMPORT_IMPORTED_MODULES}:${package}" # should we add ${package_file} to this list too?
   done
 
 }
