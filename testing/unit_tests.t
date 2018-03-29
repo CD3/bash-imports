@@ -43,3 +43,10 @@
   INFO: Found /home/cclark/Code/sync/projects/bash-imports/testing/mod1 to import mod1
   mod1-init.sh
   mod1-lib.sh
+  $ cd $TESTDIR; ./test_circular-imports.sh
+  script
+  INFO: Found /home/cclark/Code/sync/projects/bash-imports/testing/test_circular-imports.sh.d/mod1.sh to import mod1
+  mod1
+  INFO: Found /home/cclark/Code/sync/projects/bash-imports/testing/test_circular-imports.sh.d/mod2.sh to import mod2
+  mod2
+  INFO: Circular import detected. 'mod1' has already been imported. Skipping.

@@ -152,11 +152,11 @@ function install_module {
   fi
 }
 
-function _has_been_imported
+function _module_in_stack
 {
   package=${1}
   shift
-  for imported_module in ${IMPORT_IMPORTED_MODULES//:/ } # WARNING: does not allow for directories with spaces in their names.
+  for imported_module in ${_IMPORT_STACK//:/ }
   do
     if [[ $package == ${imported_module} ]]
     then
@@ -173,9 +173,20 @@ function import {
   # This involvies finding the files containing the module
   # and then sourcing the scripts contained in the module.
   packages=$(echo "${*}" | sed "s/,/ /g")
+  # not sure if local actually does anything useful here.
+  # the intension is to keep this function from polluting
+  # the scripts namespace
+  local _IMPORT_LEVEL=$((${_IMPORT_LEVEL:-0}+1))
+  local _IMPORT_STACK="${_IMPORT_STACK:-''}"
 
   for package in ${packages}
   do
+    if _module_in_stack "${package}"
+    then
+      _log 2 "Circular import detected. '${package}' has already been imported. Skipping."
+      continue
+    fi
+    _IMPORT_STACK="${_IMPORT_STACK}:${package}"
     package_dir=$package.import.d
     [[ -d $package_dir ]] && rm -r $package_dir
 
@@ -199,7 +210,8 @@ function import {
     done
     [[ -d ${bin_dir} ]] && export PATH="${bin_dir}:${PATH}"
 
-    IMPORT_IMPORTED_MODULES="${IMPORT_IMPORTED_MODULES}:${package}:${package_file}"
+    # only add "top-level" imports to global import list
+    [[ ${_IMPORT_LEVEL} -eq 1 ]] && IMPORT_IMPORTED_MODULES="${IMPORT_IMPORTED_MODULES}:${package}:${package_file}"
   done
 
 }
