@@ -1,7 +1,9 @@
 # bash-imports
 
-This is a small bash script that defines a function named `import` that can be used to source other scripts that
-your script depends on, similar to importing a module/package in Python. For example:
+This is a small bash script I wrote to help with reusing shell code. It provides a shell function named `import`
+for importing "modules", which
+is basically a more general version of `source`. In fact, `import` ultimatly just calls `source`, but it
+searches for the file (or files) to source. For example:
 
 ```bash
 #! /bin/bash
@@ -10,22 +12,16 @@ import functions
 
 ...
 ```
-will look for a file named `functions.sh` in the current directory and source it.
 
-Actually, the `import` function looks for several different files in several different locations to satisfy
-the request. First, the current directory is searched. If the module/package is not found, then `import` will
-look in the directories contained in the environment variable `IMPORT_MODULE_PATH`, if any.
+In this script, the `import` function will look for a file or directory named:
 
-For each directory that is searched, the `import` function will look for a file or directory with the following
-names, in order:
+1. `functions`
+1. `functions.sh`
+1. `functions.tar`
+1. `functions.tar.bz2`
+1. `functions.tar.gz`
 
-1. `<module>.sh`
-1. `<module>`
-1. `<module>.tar`
-1. `<module>.tar.bz2`
-1. `<module>.tar.gz`
-
-If a file or directory is found, the `import` function will do the following:
+If found, the `import` function will do the following:
 
 1. If a file is found, it is sourced.
 1. If a directory is found:
@@ -33,7 +29,14 @@ If a file or directory is found, the `import` function will do the following:
     1. Source all `*.sh` files in the `lib/` subdirectory, if it exists.
     1. Add the `bin/` subdirectory to `PATH`.
 1. If a tarball is found:
-    1. Unpacked the tarball into a directory.
+    1. Unpack the tarball into a directory.
     1. Source all `*.sh` files in the top-level of the directory.
     1. Source all `*.sh` files in the `lib/` subdirectory, if it exists.
     1. Add the `bin/` subdirectory to `PATH`.
+
+The `module` function will search for modules in the current directory first. If the module is not found, it will
+start searching in the list of directories contained in the `IMPORT_MODULE_PATH` (set to `${HOME}/.bash/modules` by default) environment variable. The first
+file or directory found is used.
+
+This makes it very easy to reuse utility code in your shell scripts. Just wrap the code up into shell functions, save them to a file, and drop it in `${HOME}/.bash/modules`. Then your script can source the `import_utils` script, and
+import the file containing your utility code.
